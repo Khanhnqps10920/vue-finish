@@ -6,8 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- bootstrap cdn -->
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
-    integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+  <link rel="stylesheet" href="libs/bootstrap/bootstrap.min.css">
 
   <title>Vue</title>
 </head>
@@ -38,8 +37,8 @@
 
             </ul>
             <form class="form-inline my-2 my-lg-0">
-              <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-              <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+              <input class="form-control mr-sm-2" type="search" v-model="searchText" placeholder="Search"
+                aria-label="Search">
             </form>
           </div>
         </div>
@@ -54,38 +53,75 @@
 
             <!-- button add - edit -->
             <div class="d-flex justify-content-end">
-              <button class="btn btn-success mb-3" :class="addStyles"
-                @click="isAdd = !isAdd">{{ isAdd ? 'Close Add' : 'Add Student' }}</button>
+              <button class="btn btn-success mb-3" @click="handleAddBtn">Add Student</button>
             </div>
 
             <!-- add form -->
-            <div class="row justify-content-center" v-if="isAdd">
+            <div class="row justify-content-center" v-if="isAdd || isEdit">
               <div class="col-md-8">
                 <div class="card card-default my-5">
                   <div class="card-header">
-                    <h1 class="text-center">Add new student</h1>
+                    <h1 class="text-center">{{ isEdit ? 'Edit Student' : 'Add new user'}}</h1>
                   </div>
 
                   <div class="card-body">
-                    <form id="">
+
+                    <!-- add form -->
+                    <form v-if="isAdd" @submit="handleSubmitAdd" id="">
 
                       <div class="form-group">
                         <label for="name">Name: </label>
-                        <input class="form-control" name="name" type="text">
+                        <input class="form-control" id="name" v-model="name" name="name" type="text">
                       </div>
 
                       <div class="form-group">
                         <label for="age">Age</label>
-                        <input class="form-control" name="age" type="text">
+                        <input class="form-control" id="age" v-model="age" name="age" type="text">
                       </div>
 
                       <div class="form-group">
                         <label for="phoneNumber">Phone Number:</label>
-                        <input class="form-control" name="phoneNumber" type="text">
+                        <input class="form-control" id="phoneNumber" v-model="phoneNumber" name="phoneNumber"
+                          type="text">
                       </div>
-                      <div class="form-group">
+                      <div class="form-group d-flex justify-content-between">
                         <button type="submit" class="btn btn-success">
-                          Add Student
+                          Add
+                        </button>
+
+                        <button type="button" @click="isAdd = false" class="btn btn-danger ml-auto">
+                          Close
+                        </button>
+                      </div>
+                    </form>
+
+                    <!-- edit form -->
+                    <form v-if="isEdit" @submit="handleSubmitEdit">
+
+                      <div class="form-group">
+                        <label for="name">Name: </label>
+                        <input class="form-control" id="name" v-model="name" name="name" type="text">
+                      </div>
+
+                      <div class="form-group">
+                        <label for="age">Age</label>
+                        <input class="form-control" id="age" v-model="age" name="age" type="text">
+                      </div>
+
+                      <div class="form-group">
+                        <label for="phoneNumber">Phone Number:</label>
+                        <input class="form-control" id="phoneNumber" v-model="phoneNumber" name="phoneNumber"
+                          type="text">
+                      </div>
+
+                      <input type="hidden" ref="studentId">
+                      <div class="form-group d-flex justify-content-between">
+                        <button type="submit" class="btn btn-success">
+                          Edit
+                        </button>
+
+                        <button type="button" @click="isEdit = false" class="btn btn-danger ml-auto">
+                          Close
                         </button>
                       </div>
                     </form>
@@ -112,10 +148,11 @@
                     <th>Name</th>
                     <th>Age</th>
                     <th>Phone Number</th>
+                    <th>Action</th>
 
                   </thead>
 
-                  <tbody v-for="(student,index) in students">
+                  <tbody v-for="(student,index) in filteredList">
 
                     <tr>
 
@@ -123,6 +160,10 @@
                       <td>{{ student.name }}</td>
                       <td>{{ student.age }}</td>
                       <td>{{ student.phone }}</td>
+                      <td>
+                        <button class="btn btn-sm btn-info mr-2" @click="handleEdit(student.id)">Edit</button>
+                        <button class="btn btn-sm btn-danger" @click="handleDelete(student.id)">Delete</button>
+                      </td>
 
                     </tr>
 
@@ -147,20 +188,16 @@
   <script src="libs/vue.js"></script>
 
   <!-- jquery -->
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
-    integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
-    crossorigin="anonymous"></script>
+  <script src="libs/jquery/jquery-3.5.1.slim.min.js"></script>
 
   <!-- bootstrap JS -->
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
-    integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
-    crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
-    integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-    crossorigin="anonymous"></script>
+  <script src="libs/bootstrap/bootstrap.min.js"></script>
+
+  <!-- popper -->
+  <script src="libs/popper.min.js"></script>
 
   <!-- libs -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Faker/3.1.0/faker.min.js"></script>
+  <script src="libs/faker.min.js"></script>
 
   <!-- main script -->
   <script src="js/main.js"></script>
